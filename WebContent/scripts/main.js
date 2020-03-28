@@ -82,6 +82,7 @@
     var welcomeMsg = document.querySelector('#welcome-msg');
     var logoutBtn = document.querySelector('#logout-link');
 
+    
     hideElement(itemNav);
     hideElement(itemList);
     hideElement(avatar);

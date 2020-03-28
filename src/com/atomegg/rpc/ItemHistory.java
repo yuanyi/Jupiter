@@ -1,5 +1,7 @@
 package com.atomegg.rpc;
 
+
+
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +21,6 @@ import org.json.JSONObject;
 import db.MySQLConnection;
 import entity.Item;
 import entity.Item.ItemBuilder;
-
 
 /**
  * Servlet implementation class ItemHistory
@@ -42,6 +43,29 @@ public class ItemHistory extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		response.getWriter().append("Served at: ").append(request.getContextPath());
+//		HttpSession session = request.getSession(false);
+//		if (session == null) {
+//			response.setStatus(403);
+//			return;
+//		}
+//		
+		String userId = request.getParameter("user_id");
+		JSONArray array = new JSONArray();
+
+		MySQLConnection connection = new MySQLConnection();
+		Set<Item> items = connection.getFavoriteItems(userId);
+		connection.close();
+		
+		for (Item item : items) {
+			JSONObject obj = item.toJSONObject();
+			try {
+				obj.append("favorite", true);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			array.put(obj);
+		}
+		RpcHelper.writeJsonArray(response, array);
 	}
 
 	/**
@@ -49,15 +73,16 @@ public class ItemHistory extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		
+		//通过requestHelper将request读取出来
 		JSONObject input = RpcHelper.readJSONObject(request);
 		try {
 			String userId = input.getString("user_id");
 			Item item = RpcHelper.parseFavoriteItem(input.getJSONObject("favorite"));
-			
+
 			MySQLConnection connection = new MySQLConnection();
 			connection.setFavoriteItems(userId, item);
 			connection.close();
-			
 			RpcHelper.writeJsonObject(response, new JSONObject().put("result", "SUCCESS"));
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -67,9 +92,8 @@ public class ItemHistory extends HttpServlet {
 	/**
 	 * @see HttpServlet#doDelete(HttpServletRequest, HttpServletResponse)
 	 */
-	protected void doDelete(HttpServletRequest request, HttpServletResponse response) 
+	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		JSONObject input = RpcHelper.readJSONObject(request);
 		try {
 			String userId = input.getString("user_id");
@@ -81,9 +105,6 @@ public class ItemHistory extends HttpServlet {
 			RpcHelper.writeJsonObject(response, new JSONObject().put("result", "SUCCESS"));
 		} catch (JSONException e) {
 			e.printStackTrace();
-		} 
+		}
 	}
-	
-
-
 }
