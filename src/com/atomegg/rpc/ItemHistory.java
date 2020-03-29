@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,13 +43,11 @@ public class ItemHistory extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-//		HttpSession session = request.getSession(false);
-//		if (session == null) {
-//			response.setStatus(403);
-//			return;
-//		}
-//		
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			response.setStatus(403);
+			return;
+		}
 		String userId = request.getParameter("user_id");
 		JSONArray array = new JSONArray();
 
@@ -57,8 +56,10 @@ public class ItemHistory extends HttpServlet {
 		connection.close();
 		
 		for (Item item : items) {
+			//convert item to JSONObject to pass to front
 			JSONObject obj = item.toJSONObject();
 			try {
+				//all the user's favorite items will be labeled and then rendered in the front
 				obj.append("favorite", true);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -73,7 +74,11 @@ public class ItemHistory extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			response.setStatus(403);
+			return;
+		}
 		//通过requestHelper将request读取出来
 		JSONObject input = RpcHelper.readJSONObject(request);
 		try {
@@ -92,8 +97,14 @@ public class ItemHistory extends HttpServlet {
 	/**
 	 * @see HttpServlet#doDelete(HttpServletRequest, HttpServletResponse)
 	 */
-	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			response.setStatus(403);
+			return;
+		}
+		
 		JSONObject input = RpcHelper.readJSONObject(request);
 		try {
 			String userId = input.getString("user_id");
